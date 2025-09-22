@@ -2,14 +2,14 @@ import { Router } from "express";
 import * as userService from "./Services/users.service.js";
 import { authenticate } from "../../middlewares/auth.js";
 
-const userController = Router();
+const router = Router();
 
 
-userController.post ('/signUp' , userService.signUp);
-userController.post ('/login' , userService.login);
-userController.patch('/update',authenticate, userService.updateUser);
-userController.delete('/delete', authenticate , userService.deleteUser)
-userController.get('/userInfo', authenticate, userService.getUser)
+router.post ('/signUp' , userService.signUp);
+router.post ('/login' , userService.login);
+router.patch('/update',authenticate, userService.updateUser);
+router.delete('/delete', authenticate , userService.deleteUser)
+router.get('/userInfo', authenticate, userService.getUser)
+router.put('/confirm', userService.ConfirmEmailService)
 
-
-export default userController;
+export default router;

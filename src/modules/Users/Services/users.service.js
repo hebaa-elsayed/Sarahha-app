@@ -1,7 +1,11 @@
 import User from "../../../DB/models/users.model.js";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
-import encrypt from "../../../utils/encryption.utils.js";
+import bcrypt, { compareSync } from "bcrypt";
+import {encrypt , decrypt , asymmetricDecryption , asymmetricEncryption} from "../../../utils/encryption.utils.js";
+import {emitter, sendEmail} from '../../../utils/send-email.utils.js';
+import { customAlphabet } from "nanoid";
+const uniqueString = customAlphabet('1234567890abcd' , 7)
+
 
 export const signUp = async (req,res) => {
     try {
@@ -16,6 +20,7 @@ export const signUp = async (req,res) => {
         }
         const hashedPassword = await bcrypt.hash(password, 8);
         const encryptedPhone = encrypt(phone);
+        const OTP = uniqueString()
         const user = await User.create({
             firstName,
             lastName,
@@ -23,16 +28,43 @@ export const signUp = async (req,res) => {
             password : hashedPassword,
             phone : encryptedPhone,
             gender,
+            otps:{confirmation: await bcrypt.hash(OTP , 10)}
         });
+        
+    emitter.emit('sendEmail' , {
+        to : email,
+        subject:'Confirmation Email',
+        content: 
+        `
+        Your confirmation OTP is :  ${OTP}
+        `
+    })
         const userObj = user.toObject();
         delete userObj.password;
-        res.status(201).json({message:"User signedUp successfully."})
+        res.status(201).json({message:"User signedUp successfully." , user})
     } catch (err) {
         console.error("SignUp error:", err);
         res.status(500).json({message:"server error"})
     }
 };
 
+
+
+export const ConfirmEmailService = async(req,res)=>{
+        const {email , OTP} = req.body
+        const user = await User.findOne({email , isConfirmed:false})
+        if(!user){
+            return res.status(400).json({message:'User not found or already confirmed'})
+        }
+        const isOtpMatched = compareSync(OTP , user.otps?.confirmation)
+        if(!isOtpMatched){
+            return res.status(400).json({message: "Invalid OTP"})
+        }
+        user.isConfirmed = true
+        user.otps.confirmation = undefined
+        await user.save()
+        res.status(200).json({message : "Confirmed"})
+}
 
 
 export const login = async (req,res) => {
