@@ -33,7 +33,15 @@ const userSchema = new mongoose.Schema({
         type : String,
         enum : ["female" , "male"],
         required : false
-    }
+    },
+    otps :{
+        confirmation: String,
+        resetPassword: String
+    },
+    isConfirmed:{
+        type: Boolean,
+        default: false
+        }
     },
     {timestamps : true}
 );
