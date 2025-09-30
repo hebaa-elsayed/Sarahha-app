@@ -41,8 +41,12 @@ const userSchema = new mongoose.Schema({
     isConfirmed:{
         type: Boolean,
         default: false
-        }
-    },
+        },
+    devices: {
+        type: [String],
+        default: []
+    }
+},
     {timestamps : true}
 );
 
