@@ -14,5 +14,6 @@ router.put('/confirm', userService.ConfirmEmailService);
 router.post('/logout', authenticate ,userService.LogOut);
 router.post('/forget-password', userService.forgetPassword);
 router.post('/reset-password', userService.resetPassword);
+router.patch('/update-password', authenticate, userService.updatePassword);
 
 export default router;
