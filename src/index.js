@@ -4,6 +4,8 @@ import userController from "./modules/Users/users.controller.js";
 import dbConnection from "./DB/db.connection.js";
 import messageController from "./modules/Messages/messages.controller.js";
 import {loggerMiddleware} from './middlewares/loggerMiddleware.js';
+import cron from "node-cron"
+import { cleanExpiredTokens } from './cron/clean-expired-tokens.js';
 
 
 
@@ -30,6 +32,12 @@ app.use((err,req,res) => {
         success: false,
         message: err.message || "Internal Server Error",
     });
+});
+
+
+cron.schedule('0 * * * *', () => {
+    console.log('Running cron job: cleanExpiredTokens');
+    cleanExpiredTokens();
 });
 
 
