@@ -187,7 +187,7 @@ export const LogOut = async (req , res) => {
     } catch (error) {
         res.status(500).json({message:"server error", error:error.message});
     }
-}
+};
 
 
 export const forgetPassword = async (req, res) => {
@@ -214,3 +214,35 @@ export const forgetPassword = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { email, OTP, newPassword } = req.body;
+
+        if (!email || !OTP || !newPassword) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+    const user = await User.findOne({ email, isConfirmed: true });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found or not confirmed' });
+        }
+
+    const isOtpMatched = bcrypt.compareSync(OTP, user.otps?.resetPassword);
+        if (!isOtpMatched) {
+            return res.status(400).json({ message: 'Invalid OTP' });
+        }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.otps.resetPassword = undefined;
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+
