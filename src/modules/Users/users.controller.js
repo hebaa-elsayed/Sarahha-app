@@ -11,6 +11,7 @@ router.patch('/update',authenticate, userService.updateUser);
 router.delete('/delete', authenticate , userService.deleteUser)
 router.get('/userInfo', authenticate, userService.getUser)
 router.put('/confirm', userService.ConfirmEmailService);
-router.post('/logout', authenticate ,userService.LogOut)
+router.post('/logout', authenticate ,userService.LogOut);
+router.post('/forget-password', userService.forgetPassword)
 
 export default router;
