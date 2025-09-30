@@ -188,3 +188,29 @@ export const LogOut = async (req , res) => {
         res.status(500).json({message:"server error", error:error.message});
     }
 }
+
+
+export const forgetPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+    const OTP = uniqueString();
+    user.otps.resetPassword = await bcrypt.hash(OTP, 10);
+    await user.save();
+
+    emitter.emit('sendEmail', {
+        to: email,
+        subject: 'Reset Password OTP',
+        content: `Your OTP to reset password is: ${OTP}`
+    });
+
+    res.status(200).json({ message: 'OTP sent to email' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
