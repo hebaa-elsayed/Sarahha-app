@@ -286,3 +286,43 @@ export const updatePassword = async (req, res) => {
 };
 
 
+
+export const resendEmail = async (req, res) => {
+    try {
+        const { email, type } = req.body;
+        if (!email || !type) {
+            return res.status(400).json({ message: 'Email and type are required' });
+        }
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const OTP = uniqueString();
+        const hashedOTP = await bcrypt.hash(OTP, 10);
+
+        switch (type) {
+            case 'confirmation':
+                user.otps.confirmation = hashedOTP;
+                emitter.emit('sendEmail', {
+                        to: email,
+                        subject: 'Confirm Your Email',
+                        content: `Your confirmation OTP is: ${OTP}`
+            });
+        break;
+            case 'resetPassword':
+                user.otps.resetPassword = hashedOTP;
+                emitter.emit('sendEmail', {
+                to: email,
+                subject: 'Reset Your Password',
+                content: `Your reset OTP is: ${OTP}`
+            });
+        break;
+        default:
+            return res.status(400).json({ message: 'Invalid type' });
+        }
+        await user.save();
+            res.status(200).json({ message: 'OTP resent successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
