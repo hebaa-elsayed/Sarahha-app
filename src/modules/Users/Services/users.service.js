@@ -72,7 +72,7 @@ export const ConfirmEmailService = async(req,res)=>{
 
 export const login = async (req,res) => {
     try {
-        const {email,password}= req.body;
+        const {email,password,deviceId}= req.body;
         const user = await User.findOne({email});
         if (!user){
             return res.status(400).json({message:"Invalid email or password"});
@@ -80,6 +80,16 @@ export const login = async (req,res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch){
             return res.status(400).json({message:"Invalid email or password"})
+        }
+        const activeDevices = user.devices || [];
+        const isNewDevice = !activeDevices.includes(deviceId);
+        if (isNewDevice && activeDevices.length >= 2) {
+            return res.status(403).json({ message: "Maximum device limit reached" });
+        }
+        if (isNewDevice) {
+            activeDevices.push(deviceId);
+            user.devices = activeDevices;
+            await user.save();
         }
         const token = generateToken({ userId: user._id , email: user.email }, 
                                 process.env.JWT_SECRET ,
