@@ -1,9 +1,12 @@
 import User from "../../../DB/models/users.model.js";
 import jwt from "jsonwebtoken";
+import {generateToken , verifyToken} from "../../../utils/token.utils.js"
+import { v4 as uuidv4 } from "uuid"
 import bcrypt, { compareSync } from "bcrypt";
 import {encrypt , decrypt , asymmetricDecryption , asymmetricEncryption} from "../../../utils/encryption.utils.js";
 import {emitter, sendEmail} from '../../../utils/send-email.utils.js';
 import { customAlphabet } from "nanoid";
+import BlackListedTokens from "../../../DB/models/black-listed-tokens.model.js"
 const uniqueString = customAlphabet('1234567890abcd' , 7)
 
 
@@ -78,7 +81,9 @@ export const login = async (req,res) => {
         if (!isMatch){
             return res.status(400).json({message:"Invalid email or password"})
         }
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET , { expiresIn: '30d' });
+        const token = generateToken({ userId: user._id , email: user.email }, 
+                                process.env.JWT_SECRET ,
+                                { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN , jwtid : uuidv4() });
         res.json({ message:"Login successful", token });
     } catch (error) {
         console.log("Login error",error.message);
@@ -168,5 +173,18 @@ export const getUser = async (req,res) => {
 };
 
 
-
-// export 
+export const LogOut = async (req , res) => {
+    try {
+        const accesstoken = req.headers.accesstoken
+        const decodedData = verifyToken(accesstoken)
+        const expirationDate = new Date(decodedData.exp * 1000)
+        const BlackListedToken = await BlackListedTokens.create({
+            tokenId:decodedData.jti,
+            expirationDate,
+            userId:decodedData.userId
+        })
+        return res.status(200).json({message:"User logged out successfully"})
+    } catch (error) {
+        res.status(500).json({message:"server error", error:error.message});
+    }
+}

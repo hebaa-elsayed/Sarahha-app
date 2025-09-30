@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as messageService from "./Services/messages.service.js";
-import { authenticate } from "../../middlewares/auth.js";
+import { authenticate } from "../../middlewares/auth.middleware.js";
 
 const messageController = Router();
 
