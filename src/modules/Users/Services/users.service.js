@@ -91,10 +91,16 @@ export const login = async (req,res) => {
             user.devices = activeDevices;
             await user.save();
         }
-        const token = generateToken({ userId: user._id , email: user.email }, 
-                                process.env.JWT_SECRET ,
-                                { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN , jwtid : uuidv4() });
-        res.json({ message:"Login successful", token });
+        const accessToken = generateToken({ userId: user._id , email: user.email }, 
+                process.env.JWT_SECRET ,
+                { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN , jwtid : uuidv4() });
+        
+        const refreshToken = generateToken(
+                { userId: user._id , email: user.email},
+                process.env.JWT_REFRESH_SECRET,
+                { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN , jwtid:uuidv4() });
+
+        res.json({ message:"Login successful", accessToken, refreshToken });
     } catch (error) {
         console.log("Login error",error.message);
     res.status(500).json({message:"server error", error:error.message});
@@ -324,5 +330,26 @@ export const resendEmail = async (req, res) => {
             res.status(200).json({ message: 'OTP resent successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+
+export const refreshToken = async (req, res) => {
+    try {
+        const  {refreshToken} = req.body;
+        if (!refreshToken) {
+            return res.status(400).json({ message: 'Refresh token is required' });
+        }
+
+        const decoded = verifyToken(refreshToken , process.env.JWT_REFRESH_SECRET);
+        const newAccessToken = generateToken(
+            { userId: decoded.userId },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN, jwtid: uuidv4() }
+        );
+
+        res.status(200).json({ accessToken: newAccessToken });
+    } catch (error) {
+        res.status(401).json({ message: 'Invalid or expired refresh token' });
     }
 };

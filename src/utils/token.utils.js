@@ -4,15 +4,15 @@ import {v4 as uuidv4} from "uuid"
 
 
 //generate token
-export function generateToken(payload) {
-    return jwt.sign(payload , process.env.JWT_SECRET, {expiresIn: process.env.JWT_ACCESS_EXPIRES_IN ,jwtid : uuidv4() });
+export function generateToken(payload, secret, options = {}) {
+    return jwt.sign(payload, secret, options);
 }
 
 
 //verify token
-export function verifyToken(token) {
+export function verifyToken(token, secret) {
     try {
-        return jwt.verify(token , process.env.JWT_SECRET);
+        return jwt.verify(token, secret);
     } catch (error) {
         return null;
     }

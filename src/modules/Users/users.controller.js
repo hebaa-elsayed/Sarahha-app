@@ -16,5 +16,6 @@ router.post('/forget-password', userService.forgetPassword);
 router.post('/reset-password', userService.resetPassword);
 router.patch('/update-password', authenticate, userService.updatePassword);
 router.post('/resend-email', userService.resendEmail);
+router.post('/refresh-token', userService.refreshToken);
 
 export default router;
