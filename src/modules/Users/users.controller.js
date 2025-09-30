@@ -12,6 +12,7 @@ router.delete('/delete', authenticate , userService.deleteUser)
 router.get('/userInfo', authenticate, userService.getUser)
 router.put('/confirm', userService.ConfirmEmailService);
 router.post('/logout', authenticate ,userService.LogOut);
-router.post('/forget-password', userService.forgetPassword)
+router.post('/forget-password', userService.forgetPassword);
+router.post('/reset-password', userService.resetPassword);
 
 export default router;
