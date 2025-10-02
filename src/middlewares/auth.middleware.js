@@ -7,7 +7,7 @@ export const authenticate = (req, res, next) => {
     if (!token) {
     return res.status(401).send('Token required');
     }
-    const decoded= verifyToken(token) ;
+    const decoded= verifyToken(token , process.env.JWT_SECRET) ;
     if (!decoded) {
         return res.status(401).send('Invalid token');
     }

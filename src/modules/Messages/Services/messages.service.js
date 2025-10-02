@@ -46,3 +46,14 @@ export const deleteMessage = async (req, res) => {
 };
 
 
+export const getUserMessages = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const messages = await Message.find({ receiver: userId }).sort({ createdAt: -1 });
+        res.status(200).json({message: "User messages retrieved successfully", data: messages});
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+};
+
+
