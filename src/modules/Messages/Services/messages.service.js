@@ -57,3 +57,31 @@ export const getUserMessages = async (req, res) => {
 };
 
 
+export const makeMessagePublic = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const messageId = req.params.id;
+        const message = await Message.findById(messageId);
+        if (!message) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        if (message.receiver.toString() !== userId) {
+            return res.status(403).json({ message: 'You are not authorized to make this message public' });
+        }
+        message.isPublic = true;
+            await message.save();
+                res.status(200).json({ message: 'Message is now public', data: message });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+
+export const getPublicMessages = async (req, res) => {
+    try {
+        const messages = await Message.find({ isPublic: true }).sort({ createdAt: -1 });
+            res.status(200).json({message: "Public messages retrieved successfully",data: messages});
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+};
