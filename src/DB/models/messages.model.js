@@ -23,6 +23,12 @@ const messageSchema= new mongoose.Schema({
 {timestamps:true}
 );
 
+messageSchema.set('toJSON', {
+    transform: function (doc, ret) {
+    delete ret.sender;
+    return ret;
+    }
+});
 
 const Message = mongoose.model("Message",messageSchema)
 
