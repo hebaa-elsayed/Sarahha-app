@@ -2,11 +2,12 @@ import { Router } from "express";
 import * as messageService from "./Services/messages.service.js";
 import { authenticate } from "../../middlewares/auth.middleware.js";
 
-const messageController = Router();
+const router = Router();
 
 
 
-messageController.post('/send',authenticate, messageService.sendMessage)
-messageController.delete('/delete/:id' , authenticate, messageService.deleteMessage)
+router.post('/send',authenticate, messageService.sendMessage)
+router.delete('/delete/:id' , authenticate, messageService.deleteMessage)
+router.get('/messages' , authenticate , messageService.getUserMessages)
 
-export default messageController;
+export default router;
