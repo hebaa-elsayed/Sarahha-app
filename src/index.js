@@ -6,7 +6,7 @@ import messageController from "./modules/Messages/messages.controller.js";
 import {loggerMiddleware} from './middlewares/loggerMiddleware.js';
 import cron from "node-cron"
 import { cleanExpiredTokens } from './cron/clean-expired-tokens.js';
-
+import googleAuth from "./modules/Users/Services/googleAuth.js";
 
 
 const app = express();
@@ -14,6 +14,7 @@ const port = process.env.PORT;
 await dbConnection() 
 app.use(express.json()); 
 
+app.use('/' , googleAuth)
 
 
 app.use('/users', userController)
